@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model area {
+  id        Int         @id
+  name      String
+  zone_id   Int
+  is_active Boolean     @default(true)
+  stake_id  Int?
+  zone      zone        @relation(fields: [zone_id], references: [zone_id], onDelete: Cascade, onUpdate: NoAction)
+  reference reference[]
+}
+
+model baptism {
+  id          Int      @id(map: "baptismWeek_pkey") @default(autoincrement())
+  start       DateTime @db.Date
+  end         DateTime @db.Date
+  amount      Int
+  create_date DateTime @default(now()) @db.Timestamp(6)
+  zone_id     Int
+  zone        zone     @relation(fields: [zone_id], references: [zone_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_zone")
+}
+
+model offer {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
+
+model reference {
+  id        String   @id
+  sent_date DateTime @default(now()) @db.Timestamp(6)
+  name      String
+  area_id   Int
+  other     String?
+  who_sent  String
+  offer     String?
+  phone     String?
+  area      area     @relation(fields: [area_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model referral {
+  id          Int      @id(map: "referralWeek_pkey") @default(autoincrement())
+  start       DateTime @db.Date
+  end         DateTime @db.Date
+  amount      Int
+  create_date DateTime @default(now()) @db.Timestamp(6)
+  zone_id     Int
+  zone        zone     @relation(fields: [zone_id], references: [zone_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_zone")
+}
+
+model stake {
+  id   Int    @id(map: "stakes_pkey") @default(autoincrement())
+  name String @unique(map: "stakes_name_key")
+}
+
+model stop_teaching_reason {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
+
+model uba_area {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
+
+model uncontacted_referral {
+  id           Int      @id(map: "uncontactedReferralWeek_pkey") @default(autoincrement())
+  start        DateTime @db.Date
+  end          DateTime @db.Date
+  amount       Int
+  create_date  DateTime @default(now()) @db.Timestamp(6)
+  zone_id      Int
+  is_over_week Boolean
+  zone         zone     @relation(fields: [zone_id], references: [zone_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_zone")
+}
+
+model user {
+  user_id     Int      @id @default(autoincrement())
+  name        String   @unique
+  is_active   Boolean? @default(true)
+  create_date DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model zone {
+  zone_id              Int                    @id(map: "Zone_pkey") @default(autoincrement())
+  name                 String                 @db.VarChar(255)
+  create_date          DateTime               @default(now()) @db.Timestamp(6)
+  is_zone_real         Boolean                @default(true)
+  area                 area[]
+  baptism              baptism[]
+  referral             referral[]
+  uncontacted_referral uncontacted_referral[]
+}
